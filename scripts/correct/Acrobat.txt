@@ -1,0 +1,12 @@
+function Acrobat()
+{
+echo "=================================================="
+                echo -e $RED"Installing Adobe Acrobat Reader"$ENDCOLOR
+                firefox http://www.adobe.com/products/eulas/&
+                sleep 3
+                wget -nc http://ardownload.adobe.com/pub/adobe/reader/unix/9.x/9.5.1/enu/AdbeRdr9.5.1-1_i386linux_enu.deb
+                sudo dpkg -i ./AdbeRdr9.5.1-1_i386linux_enu.deb
+                rm ./AdbeRdr*
+
+}
+
