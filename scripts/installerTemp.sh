@@ -8,43 +8,21 @@ set -e -x
 sudo apt-get update
 export http_proxy=http://proxy.iiit.ac.in:8080/
 
-function VirtualBox()
+function Dropbox()
 {
-        if [ -f /etc/apt/sources.list.d/VirtualBox.list ]
-        then
-                echo -e $GREEN"*VirtualBox Repository Found*"$ENDCOLOR
-               
-        else
-                echo "=================================================="
-                echo -e $BLUE"Adding the VirtualBox Repository"$ENDCOLOR
-                sudo bash -c "echo 'deb http://download.virtualbox.org/virtualbox/debian $DISTRIBUTION contrib' > ./VirtualBox.list"
-                sudo mv ./VirtualBox.list /etc/apt/sources.list.d/VirtualBox.list
-                wget -q http://download.virtualbox.org/virtualbox/debian/oracle_vbox.asc -O- | sudo apt-key add -
-        fi
-	echo "Updating repository---------------------"
-	echo -e $RED"Installing VirtualBox"$ENDCOLOR
+        echo "=================================================="
+        echo -e $RED"Installing Dropbox"$ENDCOLOR
         if [ $ARCHITECTURE = "i686" ]
         then
-                wget -nc http://dlc.sun.com.edgesuite.net/virtualbox/4.2.6/virtualbox-4.2_4.2.6-82870~Ubuntu~$DISTRIBUTION\_i386.deb
+                wget -nc http://linux.dropbox.com/packages/ubuntu/dropbox_1.4.0_i386.deb
         fi
         if [ $ARCHITECTURE = "x86_64" ]
         then
-                wget -nc http://dlc.sun.com.edgesuite.net/virtualbox/4.2.6/virtualbox-4.2_4.2.6-82870~Ubuntu~$DISTRIBUTION\_amd64.deb
+                wget -nc http://linux.dropbox.com/packages/ubuntu/dropbox_1.4.0_amd64.deb
         fi
-        sudo apt-get --force-yes -y install libcurl3 libqt4-network libqt4-opengl libqtcore4 libqtgui4 libsdl-ttf2.0-0 libaudio2 libmng1 libqt4-dbus libqt4-xml
-        echo -e $RED"Removing Previous VirtualBox Versions"$ENDCOLOR
-        sudo apt-get --force-yes -y remove virtualbox
-        sudo dpkg -i virtualbox*
-        rm ./virtualbox*
-        RESTART="YES"
-        echo "=================================================="
-        echo -e $RED"Downloading VirtualBox Extensions"$ENDCOLOR
-        wget -nc http://dlc.sun.com.edgesuite.net/virtualbox/4.2.4/Oracle_VM_VirtualBox_Extension_Pack-4.2.4.vbox-extpack
-        echo "=================================================="
-        sudo /etc/init.d/vboxdrv setup
-        virtualbox&
-        echo -e $RED"Starting VirtualBox"$ENDCOLOR
-        return 
+        sudo dpkg -i ./dropbox*.deb
+        rm ./dropbox*.deb
+        sudo apt-get install --force-yes -y python-gpgme
+        /usr/bin/python /usr/bin/dropbox start -i
 }
-
-VirtualBox
+Dropbox

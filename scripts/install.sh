@@ -12,6 +12,12 @@ function installSoftwaresForUbuntu()
 	read line < configOfUbuntu
 #	echo $line
 	ans=$(zenity  --list  --width=600 --height=670 --text "Choose your Software Installations" --checklist  --column "Select" --column "Options" $line --separator=":")
+        if [ $? == 1 ]
+        then
+                echo "Program Terminated"
+                exit 0
+        fi
+
 	cat scriptLines.txt > installerTemp.sh
 	arr=$(echo $ans | tr "\:" "\n")
 	for x in $arr
@@ -34,7 +40,8 @@ os_type=$(zenity  --list  --width=600 --height=670 --text "Choose Operating Syst
 #echo $ans
 if [ "$os_type" = "Ubuntu" ] ; then 
 	installSoftwaresForUbuntu
-else
+fi
+if [ "$os_type" = "Fedora" ] ; then 
 	installSoftwaresForFedora
 fi
 
