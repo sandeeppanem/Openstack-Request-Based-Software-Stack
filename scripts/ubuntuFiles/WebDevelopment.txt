@@ -1,0 +1,11 @@
+function WebDevelopment()
+{
+        echo "=================================================="
+        echo -e $RED"Installing Apache PHP5 and Node JS"$ENDCOLOR
+        sudo apt-get install --force-yes -y apache2 php5 python-software-properties nodejs npm
+        sudo a2enmod php5
+        firefox http://www.google.com/talk/intl/en/terms.html http://www.google.com/talk/intl/en/privacy.html&
+        sudo apache2ctl restart
+}
+
+

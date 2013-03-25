@@ -1,0 +1,19 @@
+function Acrobat()
+{
+echo "=================================================="
+                echo -e $RED"Installing Adobe Acrobat Reader"$ENDCOLOR
+                /usr/bin/notify-send "Installing Adobe Acrobat Reader"
+                /usr/bin/notify-send "Displaying Adobe end user license agreements.  Opening Firefox"
+                firefox http://www.adobe.com/products/eulas/&
+                sleep 3
+                zenity --question --text="Do you agree to the terms of end user license agreement (EULA) of Adobe Acrobat Reader?"
+                if [ $? == 0 ]
+                then
+                        /usr/bin/notify-send "Installing Adobe Acrobat Reader"
+                        wget -nc http://ardownload.adobe.com/pub/adobe/reader/unix/9.x/9.5.1/enu/AdbeRdr9.5.1-1_i386linux_enu.deb
+                        sudo dpkg -i ./AdbeRdr9.5.1-1_i386linux_enu.deb
+                        rm ./AdbeRdr*
+                fi
+
+}
+

@@ -1,0 +1,43 @@
+function Java()
+{
+        echo "=================================================="
+        echo -e $RED"Installing Java or OpenJDK"$ENDCOLOR
+        zenity --question --width=420 --height=100 --ok-label="OpenJDK" --cancel-label="Java" --text="BleedingEdge can help you install\n\n-Oracle Java (Proprietary)\n\n   or\n\n-OpenJDK (Open Source)\n\nWhich do you prefer?"
+                if [ $? == 1 ]
+                then
+                        echo -e $RED"Installing Java"$ENDCOLOR
+                        /usr/bin/notify-send "Installing Java"
+                        /usr/bin/notify-send "Displaying Oracle Java terms.  Starting Firefox"
+                        firefox http://www.oracle.com/technetwork/java/javase/terms/license/index.html&
+                        sleep 3
+                        zenity --question --text="Do you agree to the terms of Oracle Java?"
+                        if [ $? == 0 ]
+                        then
+                                if [ $ARCHITECTURE = "i686" ]
+                                then
+                                        wget -nc http://javadl.sun.com/webapps/download/AutoDL?BundleId=69465
+                                        mv ./AutoDL?Bund* ./jre-7u9-linux-i586.tar.gz
+                                        tar -xvf ./jre*
+                                        sudo mkdir /usr/lib/jvm/jre1.7.0_09/
+                                        sudo mv ./jre*/* /usr/lib/jvm/jre1.7.0_09/
+                                        sudo ln -s /usr/lib/jvm/jre1.7.0_09/lib/i386/libnpjp2.so /usr/lib/firefox/plugins/
+                                fi
+                                if [ $ARCHITECTURE = "x86_64" ]
+                                then
+                                        wget -nc http://javadl.sun.com/webapps/download/AutoDL?BundleId=69467
+                                        mv ./AutoDL?Bund* ./jre-7u9-linux-x64.tar.gz
+                                        tar -xvf ./jre*
+                                        sudo mkdir /usr/lib/jvm/jre1.7.0_09/
+                                        sudo mv ./jre*/* /usr/lib/jvm/jre1.7.0_09/
+                                        sudo ln -s /usr/lib/jvm/jre1.7.0_09/lib/amd64/libnpjp2.so /usr/lib/firefox/plugins/
+                                        rm -rf ./jre*
+                                fi
+                        fi
+                else
+                        echo -e $RED"Installing OpenJDK"$ENDCOLOR
+                        /usr/bin/notify-send "Installing OpenJDK"
+                        sudo apt-get -y install openjdk-7-jre icedtea-7-plugin icedtea-plugin default-jre default-jre-headless icedtea-7-jre-cacao icedtea-7-jre-jamvm libatk-wrapper-java-jni openjdk-7-jre-headless icedtea-netx-common libtirpc1 rpcbind libgssglue1 icedtea-plugin
+                fi
+        return
+}
+

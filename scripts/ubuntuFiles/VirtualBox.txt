@@ -1,13 +1,3 @@
-#!/bin/bash
-RED="\033[0;31m"
-ENDCOLOR="\033[0m"
-DISTRIBUTION=`cat /etc/*-release | grep "DISTRIB_CODENAME" | sed -e 's/DISTRIB_CODENAME=//g'`
-echo $DISTRIBUTION
-ARCHITECTURE=`uname -m`
-set -e -x
-sudo apt-get update
-export http_proxy=http://proxy.iiit.ac.in:8080/
-
 function VirtualBox()
 {
         if [ -f /etc/apt/sources.list.d/VirtualBox.list ]
@@ -47,4 +37,3 @@ function VirtualBox()
         return 
 }
 
-VirtualBox
