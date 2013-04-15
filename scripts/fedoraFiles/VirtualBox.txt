@@ -1,0 +1,18 @@
+function VirtualBox()
+{
+wget http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo > /home/ec2-user/output3.txt 2>&1
+sudo mv virtualbox.repo /etc/yum.repos.d/
+## Fedora 18/17/16/15/14/13/12 users
+sudo yum -y update
+
+#Dependencies
+sudo yum -y install binutils gcc make patch libgomp glibc-headers glibc-devel kernel-headers kernel-devel dkms qt > /home/ec2-user/output4.txt 2>&1
+sudo yum -y install VirtualBox-4.2 > /home/ec2-user/output5.txt 2>&1
+
+#CREATE A USER GROUP. REPLACE "user_name" IN BELOW COMMAND WITH YOUR USER NAME
+#/etc/init.d/vboxdrv setup
+#usermod -a -G vboxusers user_name
+#VirtualBox
+}
+
+

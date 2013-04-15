@@ -1,0 +1,14 @@
+#!/bin/sh
+
+which java
+if [ $? -ne 0 ]
+then
+ sudo yum -y install java-1.7.0-openjdk
+fi
+
+which javac
+if [ $? -ne 0 ]
+then
+ sudo yum -y install java-1.7.0-openjdk-devel
+fi
+

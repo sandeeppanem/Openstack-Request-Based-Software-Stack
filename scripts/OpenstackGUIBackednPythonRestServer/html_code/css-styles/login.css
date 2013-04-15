@@ -1,0 +1,42 @@
+@CHARSET "UTF-8";
+
+.grid16
+{
+	   background:none repeat scroll 0 0 #3B659C;
+     border-collapse: collapse;
+     border-radius: 20px 20px 20px 20px;
+     color: white;
+     font-family: Calibri;
+     font-size: 1.2em;
+     font-style: italic;
+     margin-left: 345px;
+     margin-top: 10px;
+     max-height: 800px;
+     max-width: 500px;
+     padding: 1em 1em 2em 4em;
+                       
+}
+
+.center{
+	text-align:center;
+}
+
+.left{
+	text-align:left;
+	width:52%;
+}
+
+
+.tabbutton{
+	text-align: center;
+	text-color: white;
+	color: white;
+	font-style: italic;
+	width: 10em;
+	background: #5CB8E6;
+	
+}
+.button{
+	 background: url("../images/login_button.jpg") repeat-x scroll left top #D4D3D3;
+}
+

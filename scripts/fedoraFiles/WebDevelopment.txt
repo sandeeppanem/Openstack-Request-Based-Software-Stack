@@ -1,0 +1,18 @@
+function WebDevelopment
+{
+mkdir apache_rpms
+cd apache_rpms
+wget http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm 
+wget http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-stable.noarch.rpm
+ 
+## For Fedora other versions replace 18 by the corresponding number##
+wget http://rpms.famillecollet.com/remi-release-18.rpm
+
+rpm -ivh *.rpm
+
+yum -y --enablerepo=remi install httpd php php-common
+
+yum -y --enablerepo=remi install php-pecl-apc php-cli php-pear php-pdo php-mysql php-pgsql php-pecl-mongo php-sqlite php-pecl-memcache php-pecl-memcached php-gd php-mbstring php-mcrypt php-xml
+
+service httpd restart
+}

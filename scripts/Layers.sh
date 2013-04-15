@@ -23,8 +23,15 @@ function installSoftwaresForUbuntu()
 
 function installSoftwaresForFedora()
 {
-	echo "To be updated----"
-
+	cat scriptLines1.txt > installerTemp.sh
+        arr=$(echo $1 | tr "\:" "\n")
+        for x in $arr
+	do
+                cat "fedoraFiles/"$x".txt" >> installerTemp.sh
+		echo $x >> installerTemp.sh
+	done
+        chmod +x installerTemp.sh
+	nova boot --key_name sandeep --user_data ./installerTemp.sh --image 531b4909-d1e0-4725-8291-1034e6ab7910 --flavor 1 instance1
 }
 
 

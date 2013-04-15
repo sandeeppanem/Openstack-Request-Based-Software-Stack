@@ -1,0 +1,149 @@
+1. apt-get install wget unzip elinks
+2. elinks http://cloudhyd.com/openstack
+3. unzip cloudhyd_inst_scripts.zip
+4../cloudhyd_install_pre.sh 
+5.cloudhyd as token
+6.password is password.
+
+dd if=/dev/zero of=novavolume bs=1M count=1024 " this will create a file "novavolume" with 1GB space, you can increase the bs and count as per your need
+
+losetup -f  novavolume " this will create a loop back adapter to mount the file as a block device as /dev/loop0 
+
+now create the lvm
+pvcreate /dev/loop0
+vgcreate nova-volumes /dev/loop0
+This will create successfully.......
+
+
+***************adding image**************************************************
+
+
+glance add name="ubuntu" disk_format=raw container_format=bare < /home/sandeep/Downloads/ubuntu-12.04-desktop-i386.iso
+
+image-id:2db6a7cd-70e7-430a-b7c8-ea516734f23b
+
+nova boot --user_data /home/sandeep/Desktop/sample.sh --image 22cce284-2129-480a-a44a-dc44eff76514 --flavor 1 instance1
+
+mysql -u root -p
+
+nova list //list instances
+
+delete from security_group_instance_association where instance_id="1";
+
+select * from images';
+
+nova console-log
+
+nova manage dbsynch
+ 
+auto eth0
+iface eth0 inet static
+ address 10.2.4.216
+ network 10.2.4.0
+ netmask 255.255.255.0
+ broadcast 10.2.4.255
+ gateway 10.2.4.1
+ dns-nameservers 8.8.8.8" 
+
+sudo restart nova-api
+sudo restart nova-compute
+sudo restart nova-network
+sudo restart nova-scheduler
+sudo restart nova-vncproxy
+sudo restart nova-volume
+sudo restart libvirt-bin
+sudo /etc/init.d/rabbitmq-server restart
+
+
+sync
+su
+echo 3 > /proc/sys/vm/drop_caches
+
+apt-get purge nova.* keystone.* glance.* swift.*
+
+/var/lib/glance/images' not empty so not removed.
+dpkg: warning: while removing glance-common, directory '/var/log/glance' not empty so not removed.
+dpkg: warning: while removing glance-common, directory '/etc/glance' not empty so not removed.
+Removing keystone ...
+keystone stop/waiting
+Purging configuration files for keystone ...
+dpkg: warning: while removing keystone, directory '/var/lib/keystone' not empty so not removed.
+dpkg: warning: while removing keystone, directory '/etc/keystone' not empty so not remove
+
+ glance delete 029073fa-f7b9-42d6-8d42-03b2e0e7d00b
+
+sudo apt-get remove --purge mysql-server mysql-client mysql-common
+sudo apt-get autoremove
+sudo apt-get autoclean
+
+virsh -c qemu:///system list
+virt-install --name ubuntu -r 512 --accelerate --disk path=/home/sandeep/disk.qcow2,size=8 --vnc --cdrom /home/sandeep/Downloads/ubuntu-12.04-desktop-i386.iso
+qemu­img create ­f qcow2 disk.qcow2 60G
+qemu-img info disk.qcow2
+
+curl http://169.254.169.254/2009-04-04/user-data
+This is some text
+$ curl http://169.254.169.254/openstack/2012-08-10/user_data
+This is some text
+ Rather, it is a package that is designed to support multiple cloud providers, so that the same virtual machine image can be used in different clouds without modification.
+
+https://github.com/sandeeppanem/Openstack-Request-Based-Software-Stack.git
+
+apt-cache policy virtualbox-4.1 //to check whether a particular software has been installed or not
+
+nova boot --key_name sandeep --user_data ./sample.sh --image fd380a92-d2bb-4097-88a1-e9f44df46965 --flavor 1 instance1 // with key
+ssh -i /home/sandeep/Downloads/sandeep.pem ubuntu@10.2.4.35
+ssh-keygen -f "/root/.ssh/known_hosts" -R 10.2.4.35
+for qcow2 format---->http://ubuntuforums.org/showthread.php?t=1638708
+
+ ssh -i /home/sandeep/Downloads/sandeep.pem ec2-user@192.168.0.2
+
+ rpm -q Virtualbox-4.2 // to check whether a package has been installed or not...
+
+sudo sed --in-place -e s/Type=oneshot/"Type=oneshot\nTimeoutSec=0"/ /lib/systemd/system/cloud-final.service | tee /home/output.txt
+sudo cat /var/log/messages
+
+unset http_proxy
+root@sandeep:~# env | grep -i proxy
+
+#echo ${arr[0]}
+#echo ${#arr[@]}
+
+
+
+**********************************************************Openstack installation from scratch***********************************************************
+
+
+
+Update repos using ubuntu cloud archive>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+First start with controller node......
+
+in that install keystone first........................................................
+
+
+http://docs.openstack.org/folsom/basic-install/content/
+
+sudo apt-get install ubuntu-cloud-keyring
+
+deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/folsom main
+
+sudo apt-get update
+
+
+************************on controller node first***************************************************************
+
+
+apt-get install keystone
+
+password for mysql is siel123
+
+
+installed mysql
+
+
+installing rabbit mq server
+
+
+

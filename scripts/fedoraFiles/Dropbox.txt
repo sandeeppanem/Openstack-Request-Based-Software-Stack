@@ -1,0 +1,15 @@
+function Dropbox()
+{
+sudo yum -y install libgnome libatk-1.0.so.0 libcairo.so.2 libfontconfig.so.1 libgdk-x11-2.0.so.0 libgdk_pixbuf-2.0.so.0 libgtk-x11-2.0.so.0 libnautilus-extension.so.1 libpango-1.0.so.0 libpangocairo-1.0.so.0 libpangoft2-1.0.so.0 nautilus-extensions pygtk2
+if $(uname -m | grep '64'); then
+ wget https://www.dropbox.com/download?dl=packages/fedora/nautilus-dropbox-1.6.0-1.fedora.x86_64.rpm > /home/ec2-user/output3.txt 2>&1
+else
+ wget https://www.dropbox.com/download?dl=packages/fedora/nautilus-dropbox-1.6.0-1.fedora.i386.rpm > /home/ec2-user/output4.txt 2>&1
+fi
+
+if [ $? -ne 0 ]; then
+ echo "Problem downloading the rpm" > /home/ec2-user/output5.txt 2>&1
+else
+ sudo rpm -ivh *dropbox*.rpm > /home/ec2-user/output6.txt 2>&1
+fi
+}

@@ -1,0 +1,49 @@
+<html>
+<head>
+<link href = "VerticalSearchStyles.css" rel="stylesheet">
+<script src="jquery.js" type="text/javascript"></script>
+
+<script>
+
+
+
+$(document).ready(function() {
+	   
+
+	function sendQueryToBackend () {
+		var strURL = "http://10.2.4.216:8081/flavor/types?callback=?";
+		$.ajax({
+			url:strURL,
+			timeout:10000,
+			async: true,
+			type: 'GET',
+			dataType: 'json', // you can try replacing json with jsonp
+			crossDomain:true,
+			success: function(result){
+                                 innerHTML = "";
+				innerHTML = innerHTML + "<h2>Type : "+result.types+"</h2>";
+				$("#userScreen").append(innerHTML);
+			},
+			error: function(req, error) { 
+				console.log(req);
+				console.log(error);
+				//alert("AJAX-JSON Error : "+req.error);
+			}
+		});
+	}
+
+	 sendQueryToBackend();
+	
+});
+
+</script>
+
+</head>
+<body>
+<h2>User Screen</h2>
+<div class = "userScreen" id = "userScreen">
+<h3>Listing Flavor Types</h3>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+#!/bin/bash
+export http_proxy=http://proxy.iiit.ac.in:8080/
+sudo yum -y install wget > /home/ec2-user/output2.txt 2>&1
+
+

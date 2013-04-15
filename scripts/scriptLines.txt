@@ -5,6 +5,7 @@ DISTRIBUTION=`cat /etc/*-release | grep "DISTRIB_CODENAME" | sed -e 's/DISTRIB_C
 echo $DISTRIBUTION
 ARCHITECTURE=`uname -m`
 set -e -x
-sudo apt-get update
 export http_proxy=http://proxy.iiit.ac.in:8080/
+sudo apt-get update
+
 

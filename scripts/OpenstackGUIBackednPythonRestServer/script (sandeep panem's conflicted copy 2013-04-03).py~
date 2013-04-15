@@ -1,0 +1,422 @@
+from bottle import route, run,get, post, request,static_file,template
+from os import curdir, sep
+import bottle
+import socket
+import fcntl
+import struct
+from xml.dom.minidom import parseString
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import xml.etree.cElementTree as ET
+import sys
+import socket
+import libvirt
+import os
+from collections import defaultdict
+counter=3800
+pm_vm_mapping=defaultdict(list)
+vmid_dmid_mapping=dict()
+vm_type_mapping=dict()
+images=dict()
+imagepaths=dict()
+pms=dict()
+instance_types=dict()
+str3=dict()
+str2=dict(dict())
+pmid_conn_mapping=dict()
+wholepath=dict()
+hostname=None
+
+class MyHandler(BaseHTTPRequestHandler):
+
+    def do_GET(self):
+        try:
+             if self.path.endswith(".html"):
+                f = open(curdir + sep + self.path) #self.path has /test.html
+#note that this potentially makes every file on your computer readable by the internet
+
+                self.send_response(200)
+                self.send_header('Content-type',	'text/html')
+                self.end_headers()
+                self.wfile.write(f.read())
+                f.close()
+                return
+             if self.path.endswith(".css"):
+                 print("hello")
+                 f = open(curdir + sep + self.path)
+                 self.send_response(200)
+                 self.send_header('Content-type',	'text/css')
+                 self.end_headers()
+                 self.wfile.write(f.read())
+                 f.close()
+                 return
+             if self.path.endswith(".esp"):   #our dynamic content
+                self.send_response(200)
+                self.send_header('Content-type',	'text/html')
+                self.end_headers()
+                self.wfile.write("hey, today is the" + str(time.localtime()[7]))
+                self.wfile.write(" day in the year " + str(time.localtime()[0]))
+                return
+                
+                
+                
+        except IOError:
+            self.send_error(404,'File Not Found: %s' % self.path)
+     
+
+    def do_POST(self):
+        global rootnode
+        try:
+            ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
+            if ctype == 'multipart/form-data':
+                query=cgi.parse_multipart(self.rfile, pdict)
+            self.send_response(301)
+            
+            self.end_headers()
+            upfilecontent = query.get('upfile')
+            print "filecontent", upfilecontent[0]
+            self.wfile.write("<HTML>POST OK.<BR><BR>");
+            self.wfile.write(upfilecontent[0]);
+            
+        except :
+            pass     
+
+
+def main():
+    try:
+        server = HTTPServer(('', 8081), MyHandler)
+        print 'started httpserver...'
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print '^C received, shutting down server'
+        server.socket.close()
+    global hostname
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    hostname=socket.inet_ntoa(fcntl.ioctl(s.fileno(),0x8915,struct.pack('256s', 'eth0'[:15]))[20:24])
+    print(hostname);           
+      
+
+@route('/image/list')
+def list_images():
+       
+    out = [{'id': key, 'name':images[key]} for key in images.keys()]
+    return {'images':out} 
+    
+@route('/instances/list')
+def list_instances():
+    
+    out=[{'pmid':key} for key in pms.keys()]
+    return {'pmids':out}
+ 
+@route('/flavor/types')
+def list_types():
+    return {'types': 3}
+
+@route('/login')
+def login_form():
+   
+    return '''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+<meta name="HandheldFriendly" content="true" />
+<title>Form</title>
+<link type="text/css" rel="stylesheet" href="/form.css"/>
+<link href="/calendarview.css" rel="stylesheet" type="text/css" />
+<link type="text/css" rel="stylesheet" href="/pastel.css/>
+<link type="text/css" media="print" rel="stylesheet" href="/printForm.css" />
+<style type="text/css">
+    .form-label{
+        width:150px !important;
+    }
+    .form-label-left{
+        width:150px !important;
+    }
+    .form-line{
+        padding-top:12px;
+        padding-bottom:12px;
+    }
+    .form-label-right{
+        width:150px !important;
+    }
+    .form-all{
+        width:650px;
+        background:url("images/noises/noise.png") repeat scroll 0% 0% rgb(207, 204, 200);
+        color:rgb(82, 75, 58) !important;
+        font-family:'Tahoma';
+        font-size:13px;
+    }
+</style>
+
+</head>
+<body>
+<form class="jotform-form" action="1.jsp" method="post" name="form_30834850487461" id="30834850487461" accept-charset="utf-8">
+  <input type="hidden" name="formID" value="30834850487461" />
+  <div class="form-all">
+    <ul class="form-section">
+      <li id="cid_1" class="form-input-wide">
+        <div class="form-header-group">
+          <h2 id="header_1" class="form-header">
+            Software Stack
+          </h2>
+        </div>
+      </li>
+      <li class="form-line" id="id_3">
+        <label class="form-label-left" id="label_3" for="input_3"> User-Name </label>
+        <div id="cid_3" class="form-input">
+          <input type="text" class=" form-textbox" id="input_3" name="q3_username" size="20" />
+        </div>
+      </li>
+      <li class="form-line" id="id_5">
+        <label class="form-label-left" id="label_5" for="input_5"> Password </label>
+        <div id="cid_5" class="form-input">
+          <input type="password" class=" form-textbox" id="input_5" name="q5_password" size="20" />
+        </div>
+      </li>
+      <li class="form-line" id="id_2">
+        <div id="cid_2" class="form-input-wide">
+          <div style="margin-left:156px" class="form-buttons-wrapper">
+            <button id="input_2" type="submit" class="form-submit-button">
+              Submit
+            </button>
+          </div>
+        </div>
+      </li>
+      <li style="display:none">
+        Should be Empty:
+        <input type="text" name="website" value="" />
+      </li>
+    </ul>
+  </div>
+  <input type="hidden" id="simple_spc" name="simple_spc" value="30834850487461" />
+
+</form></body>
+</html>'''
+    
+
+@route('/pm/<pmid>')
+def pm_query(pmid):
+    global pms
+    pmid=int(pmid)
+    conn=pmid_conn_mapping.get(pmid)
+    type1=conn.getType()
+    numcpus=conn.getMaxVcpus(type1)
+    freemem=conn.getFreeMemory()/(1024.0*1024.0*1024)*8
+    host=pms.get(pmid)
+    totaldisk=os.popen('ssh '+host+' df -h | grep "^/dev/[hs]d" | awk "{s+=\$2} END {print s}"').read()
+    freedisk=os.popen('ssh '+host+' df -h | grep "^/dev/[hs]d" | awk "{s+=\$4} END {print s}"').read()
+    totaldisk=totaldisk.rstrip()+"GB"
+    freedisk=freedisk.rstrip()+"GB"
+    #print "free memory:%f GB" % num
+    nodeinfo=conn.getInfo()
+    s=nodeinfo.pop(2)
+    acpus=int(s)
+    #print "Total active cpus are %d" % p
+    cpu=0
+    domains=0
+    for id in conn.listDomainsID():
+        domains+=1
+        dom = conn.lookupByID(id)
+        info=dom.info()
+        s=info.pop(3)
+        cpu+=int(s)
+    freecpus=numcpus-cpu
+    #print "Number of free cpus are %d" % (acpus-cpu)
+    s=nodeinfo.pop(1)
+    totalmem=(float(s)/1024.0)
+    #print "total memory is %f GB" % (p/(1024.0))
+    #print "Num of virtual machines:%d" % domains
+    out=[{'pmid':pmid,'capacity':{'cpu':numcpus,'ram':totalmem,'disk':totaldisk},'free':{'cpu':freecpus,'ram':freemem,'disk':freedisk},'vms':domains}]
+    return {'pmid':out}
+         
+@route('/vm/query1')    
+def vm_query():
+    #x=request.query.get('vmid')
+    name="sandeep"
+    return template('Hello {{name}}', name=name)    
+    
+
+@route('/vm/destroy')
+def vm_destroy():
+    vmid=request.query.get('vmid')
+    global pm_vm_mapping
+    global vmid_dmid_mapping
+    #obtain pmid based on vmid and get ssh connection to the particular host
+    vmid=int(vmid)
+    for key,values in pm_vm_mapping.iteritems():
+        for i in values:
+            if i==vmid:
+                pmid=key
+                values.remove(vmid)
+                break
+        break
+        
+            
+    conn=pmid_conn_mapping.get(pmid)
+    for key,values in vmid_dmid_mapping.iteritems():
+        if key==vmid:
+            x=values
+            del vmid_dmid_mapping[key]
+            break
+    dom=conn.lookupByID(x)
+    check=dom.destroy()
+    if(check==0):
+        return {"status": 1}
+    else:
+        return {"status": 0}
+
+
+    
+
+
+    
+        
+@route('/vm/create')
+def vm_create():
+    name =request.query.get('name')
+    vm_type=request.query.get('vm_type')
+    image_type=request.query.get('image_type')
+    global counter
+    global pm_vm_mapping
+    global vmid_dmid_mapping
+    global vm_type_mapping
+    global pmid_conn_mapping
+    vm_type=int(vm_type)
+    image_type=int(image_type)
+    memory1=int(instance_types.values()[vm_type-1])*1000
+    vcpu1=instance_types.keys()[vm_type-1]
+    machine_id=scheduler(memory1,vcpu1)
+    conn=pmid_conn_mapping.get(machine_id)
+                
+    #get image from image list
+    #get ram and vcpu from intstance list
+    #den creating xml
+    #den create domain on which ever machine its available
+    
+    
+    
+    xml=conn.getCapabilities()
+    image_path="/var/lib/libvirt/images/"
+    image_name=images.get(image_type)
+    
+    name1=name
+    type1=conn.getType()
+    if (type1=="xen"):
+        dev1='xvdd'
+        bus='xen'
+        dname='tap'
+        dtype='qcow'
+    else:
+        dev1="hda"
+        bus='ide'
+        dname='qemu'
+        dtype='raw'
+    dom = parseString(xml)
+    arch = dom.getElementsByTagName('arch')[0].firstChild.data
+    emulator=dom.getElementsByTagName('emulator')[0].firstChild.data
+    os_type= dom.getElementsByTagName('os_type')[0].firstChild.data
+    machine=dom.getElementsByTagName('machine')[0].firstChild.data
+    vm_createxml(name1,memory1,vcpu1,image_name,type1,arch,emulator,os_type,image_path,dev1,bus,dname,dtype,machine)
+    filename="filename.xml"
+    f=open(filename,'r')
+    xmlconfig=f.read()
+
+    dom=conn.createXML(xmlconfig,0)
+    id=dom.ID()
+    pm_vm_mapping[machine_id].append(counter)
+    vmid_dmid_mapping.update({counter:id})
+    vm_type_mapping.update({counter:vm_type})
+    counter+=1
+    return {"vmid" : (counter-1)}
+
+def vm_createxml(name1,memory1,vcpu1,image_name,type1,arch,emulator,os_type,image_path,dev1,bus,dname,dtype,machine):
+    
+    
+    memory1=str(memory1)
+    vcpu1=str(vcpu1)
+    type1=str(type1)
+    type1=type1.lower()
+
+    
+    domain = ET.Element("domain")
+    domain.set("type",type1)
+
+    name = ET.SubElement(domain, "name")
+    name.text=name1
+    memory = ET.SubElement(domain, "memory")
+    memory.text=memory1
+    vcpu = ET.SubElement(domain, "vcpu")
+    vcpu.text=vcpu1
+    if (type1=='xen'):
+        bootloader=ET.SubElement(domain, "bootloader")
+        bootloader.text='/usr/bin/pygrub'
+    os = ET.SubElement(domain, "os")
+    type1=ET.SubElement(os, "type")
+    type1.set("arch",arch)
+    type1.set("machine",machine)
+    type1.text=os_type
+    if (type1=='qemu'):
+        boot=ET.SubElement(os, "boot")
+        boot.set("dev","hd")
+        
+    features = ET.SubElement(domain, "features")
+    acpi = ET.SubElement(features, "acpi")
+    apic = ET.SubElement(features, "apic")
+    pae = ET.SubElement(features, "pae")
+    on_poweroff = ET.SubElement(domain, "on_poweroff")
+    on_poweroff.text="destroy"
+    on_reboot = ET.SubElement(domain, "on_reboot")
+    on_reboot.text="restart"
+    on_crash = ET.SubElement(domain, "on_crash")
+    on_crash.text="restart"
+    devices = ET.SubElement(domain, "devices")
+    emulator = ET.SubElement(devices, "emulator")
+    emulator.text=emulator
+    disk = ET.SubElement(devices, "disk")
+    disk.set("type","file")
+    disk.set("device","disk")
+    driver = ET.SubElement(disk, "driver")
+    driver.set("name",dname)
+    driver.set("type",dtype)
+    source = ET.SubElement(disk, "source")
+    source.set("file",image_path+image_name)
+    target = ET.SubElement(disk, "target")
+    target.set("dev",dev1)
+    target.set("bus",bus)
+    address = ET.SubElement(disk, "address")
+    address.set("type","drive")
+    address.set("controller","0")
+    address.set("bus","0")
+    address.set("unit","0")
+
+    tree = ET.ElementTree(domain)
+    tree.write("filename.xml")
+
+def scheduler(memory1,vcpu1):
+    memory1=(memory1/1000)/1024.0
+    pm_mem=dict()
+    cpu=0
+    global pmid_conn_mapping
+    j=1
+    for i,v in pmid_conn_mapping.iteritems():
+        freemem=v.getFreeMemory()/(1024.0*1024.0*1024)*8
+        type1=v.getType()
+        numcpus=v.getMaxVcpus(type1)
+        for id in v.listDomainsID():
+            dom = v.lookupByID(id)
+            info=dom.info()
+            s=info.pop(3)
+            cpu+=int(s)
+        freecpus=numcpus-cpu
+        if (freemem>=memory1 and freecpus>=vcpu1):
+            hash1=(freemem-memory1)+(freecpus-vcpu1)
+            pm_mem.update({j:hash1})
+            j+=1
+    list_sorted= sorted(pm_mem,key=pm_mem.get)
+    return list_sorted[0]
+    
+         
+        
+    
+   
+if __name__ == '__main__':
+    main()

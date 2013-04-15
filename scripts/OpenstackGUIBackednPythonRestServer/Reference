@@ -1,0 +1,246 @@
+#!/usr/bin/env python
+# vim: set fileencoding=utf-8 :
+
+'''
+File: nova_shell.py
+Author: FranÃ§ois Charlier
+Description: Simple shell for Nova using novaclient bindings
+'''
+
+import cmd
+import logging
+import os
+
+import novaclient
+from novaclient.v1_1 import client
+
+
+class NovaShell(cmd.Cmd):
+    """Simple command processor for Openstack's Nova"""
+
+    prompt = 'nova> '
+    intro = "Simple shell for Openstack Nova"
+
+    def __init__(self):
+        cmd.Cmd.__init__(self)
+        self._previous_log_level = None
+        self._logging_handler = None
+        self._debug = 'off'
+        self._client = client.Client(os.environ['NOVA_USERNAME'],
+                                     os.environ['NOVA_API_KEY'],
+                                     None,
+                                     os.environ['NOVA_URL'])
+
+    def server_details_short(self, server):
+        """Returns a short string describing the server"""
+        server_format_string =\
+            '[%(id)d] :: %(name)s (%(flavor_name)s): %(status)s'
+        return server_format_string % self.server_details(server)
+
+    def server_details_full(self, server):
+        """Returns a long string describing the server details"""
+        server_format_string = '[%(id)d] :: %(name)s:\n\
+\tStatus: %(status)s\n\
+\tFlavor: %(flavor_name)s - Ram: %(flavor_ram)dM - Disk: %(flavor_disk)dG\n\
+\tImage: %(image_name)s\n\
+\tHost: %(hostId)s\n\
+\tUuid: %(uuid)s\n\
+\tIP Addrs.:\n%(addrs)s'
+        return server_format_string % self.server_details(server)
+
+    def server_details(self, server):
+        """Gets information about the server into a dictionnary"""
+        addrs = []
+        for nic in server.addresses:
+            addrs.append(
+                '\t\t%s: %s' % (nic, ', '.join(
+                    ip['addr'] for ip in server.addresses[nic])))
+
+        image = self._client.images.get(long(server.image['id']))
+        flavor = self._client.flavors.get(long(server.flavor['id']))
+
+        return {
+            'id': server.id,
+            'hostId': server.hostId,
+            'name': server.name,
+            'status': server.status,
+            'addrs': '\n'.join(addrs),
+            'uuid': server.uuid,
+            'image_name': image.name,
+            'flavor_name': flavor.name,
+            'flavor_ram': flavor.ram,
+            'flavor_disk': flavor.disk,
+        }
+
+    def do_debug(self, status):
+        """debug [on|off] : sets debug on/off. \
+debug prints the REST API calls and results\n\
+debug : show debug status"""
+        if status == 'on':
+            self._previous_log_level = \
+                novaclient.client._logger.getEffectiveLevel()
+            if self._logging_handler is None:
+                self._logging_handler = logging.StreamHandler()
+            novaclient.client._logger.setLevel(logging.DEBUG)
+            novaclient.client._logger.addHandler(self._logging_handler)
+            self._debug = status
+        elif status == 'off':
+            if not self._previous_log_level is None:
+                novaclient.client._logger.setLevel(self._previous_log_level)
+            if not self._logging_handler is None:
+                novaclient.client._logger.removeHandler(self._logging_handler)
+            self._debug = status
+        else:
+            print 'Debug is %s' % self._debug
+
+    def do_list(self, line):
+        """list : list instances"""
+        for server in self._client.servers.list():
+            print self.server_details_short(server)
+
+    def do_boot(self, name):
+        """boot <name> : create new instance"""
+        print
+        for flavor in self._client.flavors.list():
+            print '%4d\t%s (%dMB Ram - %dGB Disk)' % (
+                    flavor.id, flavor.name, flavor.ram, flavor.disk)
+        flavor_id = raw_input('\nFlavor id for "%s" : ' % name)
+        try:
+            flavor = self._client.flavors.get(flavor_id)
+        except novaclient.exceptions.NotFound as ex:
+            print ex
+            return
+
+        print
+        for image in self._client.images.list():
+            print '%4d\t%s' % (image.id, image.name)
+        image_id = raw_input('\nImage id for "%s" : ' % name)
+        try:
+            image = self._client.images.get(image_id)
+        except novaclient.exceptions.NotFound as ex:
+            print ex
+            return
+
+        print
+        for key in self._client.keypairs.list():
+            print "\t%s" % key.name
+        key_name = raw_input('\nKey name to push on the server : ')
+
+        try:
+            server = self._client.servers.create(
+                name, image, flavor,
+                meta={'booted-by': 'nova_shell.py'},
+                files={'/etc/motd': 'Welcome ...\n\
+\nThis is just a silly motd. Heh !'},
+                key_name=key_name)
+            print "New server created :\n%s" % \
+                    self.server_details_short(server)
+        except Exception as ex:
+            print ex
+
+    def do_delete(self, instance_id):
+        """instance delete <instance id> : delete instance by id"""
+        try:
+            server = self._client.servers.get(instance_id)
+            print 'Server Details :\n%s' % self.server_details_full(server)
+            print
+            rly = raw_input('This will permanently destroy the instance \
+and all associated data.\nAre you sure you want to continue ? (y/N)')
+            if rly == 'y':
+                print 'Deleting instance ...',
+                self._client.servers.delete(server)
+                print 'Ok'
+            else:
+                print 'deletion aborted'
+        except novaclient.exceptions.NotFound as ex:
+            print ex
+
+    def do_show(self, instance_id):
+        """show <id> : get instance detail"""
+        try:
+            server = self._client.servers.get(instance_id)
+            print self.server_details_full(server)
+        except novaclient.exceptions.NotFound as ex:
+            print ex
+
+    def do_assoc_ip(self, line):
+        """assoc_ip <instance id> <ip id> : \
+associate a public IP address to an instance\
+use ip id -1 to allocate a new ip"""
+        try:
+            instance_id, ip_id = line.split()
+            server = self._client.servers.get(instance_id)
+        except ValueError as ex:
+            print 'This command needs two parameters : \
+an instance id and an ip address id'
+            return
+        except novaclient.exceptions.NotFound as ex:
+            print ex
+            return
+
+        if ip_id == "-1":
+            ip_addr = self._client.floating_ips.create()
+        else:
+            try:
+                ip_addr = self._client.floating_ips.get(ip_id)
+            except novaclient.exceptions.NotFound as ex:
+                print ex
+                return
+        server.add_floating_ip(ip_addr)
+        server = self._client.servers.get(server.id)
+        ip_addr = self._client.floating_ips.get(ip_addr.id)
+        print 'IP address %s associated to server [%d] %s' % \
+                (ip_addr.ip, server.id, server.name)
+
+    def do_unassoc_ip(self, line):
+        """unassoc_ip <instance id> <ip address> :\
+disassociate a public ip from the specified instance"""
+        try:
+            (instance_id, ip_address) = line.split()
+            server = self._client.servers.get(instance_id)
+        except ValueError as ex:
+            print 'This commands needs two parameters :\
+an instance id and an IP address'
+            return
+        except novaclient.exceptions.NotFound as ex:
+            print ex
+            return
+        server.remove_floating_ip(ip_address)
+
+    def do_allocate_ip(self, line):
+        """allocate_ip : allocates a new ip and add it to your pool"""
+        ip_addr = self._client.floating_ips.create()
+        print "New ip allocated : %s" % ip_addr.ip
+
+    def do_list_ips(self, line):
+        """list_ips : list public IPs available in your pool"""
+        print "Available public IPs :"
+        for ip_addr in self._client.floating_ips.list():
+            assoc_str = ""
+            if ip_addr.instance_id:
+                assoc_server = self._client.servers.get(ip_addr.instance_id)
+                assoc_str = " : currently associated to [%d] %s" % (
+                        assoc_server.id,
+                        assoc_server.name)
+            print "%4d\t%s%s" % (ip_addr.id, ip_addr.ip, assoc_str)
+
+    def do_release_ip(self, ip_address):
+        """release_ip <ip address id> : release ip from your pool"""
+        try:
+            self._client.floating_ips.get(ip_address).delete()
+        except novaclient.exceptions.NotFound as ex:
+            print ex
+            return
+
+    def do_EOF(self, line):
+        """Hit ^D to logout"""
+        print
+        return True
+
+
+if __name__ == '__main__':
+    NovaShell().cmdloop()
+
+
+https://github.com/larsks/drifter/blob/master/drifter/instance.py
+https://github.com/asdfio/cloudtee/blob/master/fabfile.py
