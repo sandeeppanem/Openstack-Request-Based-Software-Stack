@@ -5,9 +5,9 @@
 5.cloudhyd as token
 6.password is password.
 
-dd if=/dev/zero of=novavolume bs=1M count=1024 " this will create a file "novavolume" with 1GB space, you can increase the bs and count as per your need
+"dd if=/dev/zero of=novavolume bs=1M count=1024"  --> this will create a file "novavolume" with 1GB space, you can increase the bs and count as per your need
 
-losetup -f  novavolume " this will create a loop back adapter to mount the file as a block device as /dev/loop0 
+"losetup -f  novavolume" --> this will create a loop back adapter to mount the file as a block device as /dev/loop0 
 
 now create the lvm
 pvcreate /dev/loop0
@@ -36,14 +36,6 @@ nova console-log
 
 nova manage dbsynch
  
-auto eth0
-iface eth0 inet static
- address 10.2.4.216
- network 10.2.4.0
- netmask 255.255.255.0
- broadcast 10.2.4.255
- gateway 10.2.4.1
- dns-nameservers 8.8.8.8" 
 
 sudo restart nova-api
 sudo restart nova-compute
@@ -87,7 +79,7 @@ $ curl http://169.254.169.254/openstack/2012-08-10/user_data
 This is some text
  Rather, it is a package that is designed to support multiple cloud providers, so that the same virtual machine image can be used in different clouds without modification.
 
-https://github.com/sandeeppanem/Openstack-Request-Based-Software-Stack.git
+
 
 apt-cache policy virtualbox-4.1 //to check whether a particular software has been installed or not
 
@@ -137,7 +129,7 @@ sudo apt-get update
 
 apt-get install keystone
 
-password for mysql is siel123
+
 
 
 installed mysql
